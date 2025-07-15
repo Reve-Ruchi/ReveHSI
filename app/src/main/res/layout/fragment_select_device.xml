@@ -1,110 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SelectDeviceFragment">
+    android:orientation="vertical"
+    tools:context=".SelectDeviceFragment"
+    android:background="@android:color/white">
 
+    <!-- Header: Logo + App Name -->
+    <LinearLayout
+        android:id="@+id/logoLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#6A0DAD"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
 
+        <ImageView
+            android:id="@+id/imgLogo"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/revelogo"
+            android:contentDescription="Logo" />
+
+        <TextView
+            android:id="@+id/tvAppName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ReveHSI"
+            android:textColor="#FCFCFD"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Title + Icons -->
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="69dp"
+        android:padding="10dp">
 
-        <!-- Top logo and app name -->
-        <LinearLayout
-            android:id="@+id/logoLayout"
-            android:layout_width="match_parent"
+        <!-- Title Center -->
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:background="#6A0DAD"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="16dp">
+            android:layout_gravity="center"
+            android:text="Select a Device"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
-            <ImageView
-                android:id="@+id/imgLogo"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_marginEnd="8dp"
-                android:contentDescription="Logo"
-                android:src="@drawable/revelogo" />
+        <!-- Back Icon - Left -->
+        <ImageView
+            android:id="@+id/myIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|center_vertical"
+            android:clickable="true"
+            android:contentDescription="Back"
+            android:focusable="true"
+            android:padding="8dp"
+            android:src="@mipmap/ic_icon" />
 
-            <TextView
-                android:id="@+id/tvAppName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ReveHSI"
-                android:textColor="#FCFCFD"
-                android:textSize="28sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="671dp"
-            android:layout_marginTop="75dp">
-
-
-            <TextView
-                android:layout_width="270dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginBottom="310dp"
-                android:text="Select a Device"
-                android:textSize="30sp"
-                android:textStyle="bold" />
-
-            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                android:id="@+id/swipeRefreshLayout"
-                android:layout_width="match_parent"
-                android:layout_height="685dp"
-                android:layout_marginTop="60dp">
-
-                <ListView
-                    android:id="@+id/device_list_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="685dp"
-                    android:layout_marginTop="60dp"
-                    android:divider="@color/gray"
-                    android:dividerHeight="1dp" />
-
-            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="58dp"
-                android:layout_marginBottom="100dp">
-
-                <ImageView
-                    android:id="@+id/myIcon"
-                    android:layout_width="53dp"
-                    android:layout_height="match_parent"
-                    android:clickable="true"
-                    android:contentDescription="Icon"
-                    android:focusable="true"
-                    android:onClick="goBack"
-                    android:padding="10dp"
-                    android:src="@mipmap/ic_icon" />
-
-                <ImageView
-                    android:id="@+id/myMenu"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="end"
-                    android:clickable="true"
-                    android:contentDescription="Menu"
-                    android:focusable="true"
-                    android:padding="10dp"
-                    android:src="@mipmap/ic_menu" />
-
-
-            </FrameLayout>
-
-
-        </FrameLayout>
-
+        <!-- Menu Icon - Right -->
+        <ImageView
+            android:id="@+id/myMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:clickable="true"
+            android:contentDescription="Menu"
+            android:focusable="true"
+            android:padding="8dp"
+            android:src="@mipmap/ic_menu" />
     </FrameLayout>
-</FrameLayout>
+
+    <!-- Device List with Swipe Refresh -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ListView
+            android:id="@+id/device_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@android:color/darker_gray"
+            android:dividerHeight="1dp" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+</LinearLayout>
