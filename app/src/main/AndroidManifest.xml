@@ -30,6 +30,9 @@
         android:theme="@style/Theme.ReveHSI"
         tools:targetApi="31">
 
+
+
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -39,7 +42,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".BleService" />
+
 
 
     </application>
