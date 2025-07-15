@@ -1,11 +1,12 @@
 package com.example.revehsi;
 
-import android.content.BroadcastReceiver;
+import android.bluetooth.BluetoothSocket;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 
 import android.text.InputFilter;
 import android.text.Spanned;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,32 +14,24 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 public class HomeFragment extends Fragment {
 
     private Button btnCap;
-    private EditText edtFarmer;
-
-    private EditText edtsample;
-    private EditText edtEmail;
-    private EditText edtMobile;
-    private EditText edtVillage;
-    private EditText edtNotes;
+    private EditText edtFarmer, edtsample, edtEmail, edtMobile, edtVillage, edtNotes;
     private FrameLayout overlayLoader;
 
-    public HomeFragment() {}
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-
-        //Toast.makeText(requireContext(), "HomeFragment Loaded!", Toast.LENGTH_SHORT).show();
 
         btnCap = view.findViewById(R.id.btncap);
         edtFarmer = view.findViewById(R.id.edtname);
@@ -49,7 +42,7 @@ public class HomeFragment extends Fragment {
         edtNotes = view.findViewById(R.id.edtnotes);
         overlayLoader = view.findViewById(R.id.overlay_loader);
 
-        // Filter: Farmer Name → Only alphabets
+        // Farmer Name – Only Alphabets
         InputFilter onlyAlphabetsFilter = new InputFilter() {
             public CharSequence filter(CharSequence src, int start, int end, Spanned dst, int dstart, int dend) {
                 for (int i = start; i < end; ++i) {
@@ -60,19 +53,57 @@ public class HomeFragment extends Fragment {
                 return null;
             }
         };
-        edtFarmer.setFilters(new InputFilter[]{new InputFilter.LengthFilter(30)});
+        edtFarmer.setFilters(new InputFilter[]{new InputFilter.LengthFilter(30), onlyAlphabetsFilter});
 
-        // Filter: Mobile Number → Only digits, max length 10
+        // Mobile – Only Digits, Max 10
         edtMobile.setFilters(new InputFilter[]{new InputFilter.LengthFilter(10)});
         edtMobile.setKeyListener(android.text.method.DigitsKeyListener.getInstance("0123456789"));
 
-        // Email validation on focus change
+        // Email validation
         edtEmail.setOnFocusChangeListener((v1, hasFocus) -> {
             if (!hasFocus && !Patterns.EMAIL_ADDRESS.matcher(edtEmail.getText().toString()).matches()) {
                 edtEmail.setError("Enter valid email");
             }
         });
-        btnCap.setOnClickListener(v -> captureData());
+
+        // Button click: GETDATA from Arduino + Save data
+        btnCap.setOnClickListener(v -> {
+            BluetoothSocket socket = BluetoothConnectionManager.getInstance().getSocket();
+
+            if (socket != null && socket.isConnected()) {
+                new Thread(() -> {
+                    try {
+                        OutputStream outputStream = socket.getOutputStream();
+                        InputStream inputStream = socket.getInputStream();
+
+                        outputStream.write("GETDATA\n".getBytes());
+                        outputStream.flush();
+
+                        byte[] buffer = new byte[1024];
+                        int bytesRead = inputStream.read(buffer);
+                        String receivedData = new String(buffer, 0, bytesRead);
+
+                        Log.d("SensorData", "Received: " + receivedData);
+
+                        requireActivity().runOnUiThread(() ->
+                                Toast.makeText(requireContext(), "Sensor Data: " + receivedData, Toast.LENGTH_LONG).show()
+                        );
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        requireActivity().runOnUiThread(() ->
+                                Toast.makeText(requireContext(), "Error reading data: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                        );
+                    }
+                }).start();
+            } else {
+                Toast.makeText(requireContext(), "Bluetooth not connected", Toast.LENGTH_SHORT).show();
+            }
+
+            // Call your data processing
+            captureData();
+        });
+
         return view;
     }
 
@@ -104,7 +135,6 @@ public class HomeFragment extends Fragment {
         overlayLoader.setVisibility(View.VISIBLE);
         btnCap.setEnabled(false);
 
-        // These will hold latest sensor values
         final String[] latestTemp = {""};
         final String[] latestPh = {""};
         final String[] latestN = {""};
@@ -116,12 +146,11 @@ public class HomeFragment extends Fragment {
                 int progress = i * 10;
 
                 try {
-                    Thread.sleep(500); // Simulate sensor delay
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
-                // TODO: Replace this with actual sensor data reading logic
                 latestTemp[0] = String.format("%.1f", 30 + Math.random() * 5);
                 latestPh[0] = String.format("%.1f", 6 + Math.random());
                 latestN[0] = String.valueOf((int) (40 + Math.random() * 20));
@@ -145,8 +174,9 @@ public class HomeFragment extends Fragment {
 
         }).start();
     }
-    private void navigateToSummary(String farmer, String sample, String email, String mobile, String village, String notes,
-                                   String temp, String ph, String n, String p, String k) {
+
+    private void navigateToSummary(String farmer, String sample, String email, String mobile,
+                                   String village, String notes, String temp, String ph, String n, String p, String k) {
 
         Bundle bundle = new Bundle();
         bundle.putString(SummaryFragment.ARG_FARMER, farmer);
@@ -170,5 +200,4 @@ public class HomeFragment extends Fragment {
                 .addToBackStack(null)
                 .commit();
     }
-
 }
